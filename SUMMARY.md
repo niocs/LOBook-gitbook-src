@@ -7,5 +7,7 @@
      * [filter](calcarch/filter.md)
 * [Libreoffice misc](misc/README.md)
      * [devsetup](misc/devsetup.md)
+     * [devserver](misc/devserver.md)
      * [bibisect](misc/bibisect.md)
      * [mdds](misc/mdds.md)
+     * [namespaces](misc/namespaces.md)
