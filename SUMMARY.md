@@ -11,3 +11,4 @@
      * [bibisect](misc/bibisect.md)
      * [mdds](misc/mdds.md)
      * [namespaces](misc/namespaces.md)
+     * [patchchecklist](misc/patchchecklist.md)
