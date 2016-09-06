@@ -1,4 +1,4 @@
-# This is series of blog posts on developing LibreOffice Extensions in C++.
-This is heavily based on https://wiki.openoffice.org/wiki/Documentation/DevGuide/OpenOffice.org_Developers_Guide but with more emphasis on starting early with C++ and Calc through complete code examples. The complete code for every examples mentioned in the blog are meant for GNU/Linux systems. It might also work on MS Windows and MacOSX but we do not support those yet.
+# Developing LibreOffice Extensions in C++.
+This is a ongoing series of posts on developing C++ LO extensions mainly for Calc. It is heavily based on https://wiki.openoffice.org/wiki/Documentation/DevGuide/OpenOffice.org_Developers_Guide but with more emphasis on starting early with C++ and Calc through complete code examples. The complete code for every examples mentioned in the blog are meant for GNU/Linux systems. It might also work on MS Windows and MacOSX but we do not support those yet.
 
 Prerequisites : A fair grasp of C++, Linux based build systems using cmdline. The reader must be able to build LO from source code. For this there is another article at [devsetup](../misc/devsetup.md)
