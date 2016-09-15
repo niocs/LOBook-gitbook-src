@@ -135,7 +135,7 @@ to manipulate the spreadsheet further.
 16. Loop over the enumerated collection of formula cells by using `XEnumeration` interface's
     `hasMoreElements()` and `nextElement()` methods
     Check [http://api.libreoffice.org](http://api.libreoffice.org) for the signature of `hasMoreElements()` and `nextElement()` methods
-    as an excercise.
+    as an exercise.
 
     ```cpp
     while ( xFormulaEnum->hasMoreElements() )
