@@ -197,19 +197,19 @@ SAL_IMPLEMENT_MAIN()
     {
         // get the remote office component context
         Reference< XComponentContext > xContext( ::cppu::bootstrap() );
-	if ( !xContext.is() )
-	{
-	    fprintf(stdout, "\nError getting context from running LO instance...\n");
-	    return -1;
-	}
+        if ( !xContext.is() )
+        {
+            fprintf(stdout, "\nError getting context from running LO instance...\n");
+            return -1;
+        }
 	
-	// retrieve the service-manager from the context
+        // retrieve the service-manager from the context
         Reference< XMultiComponentFactory > rServiceManager = xContext->getServiceManager();
-	if ( rServiceManager.is() )
-	    fprintf(stdout, "\nremote ServiceManager is available\n");
-	else
-	    fprintf(stdout, "\nremote ServiceManager is not available\n");
-	fflush(stdout);
+        if ( rServiceManager.is() )
+            fprintf(stdout, "\nremote ServiceManager is available\n");
+        else
+            fprintf(stdout, "\nremote ServiceManager is not available\n");
+        fflush(stdout);
     }
     catch ( ::cppu::BootstrapException& e )
     {
