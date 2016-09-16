@@ -164,6 +164,9 @@ $ make ManipulateSpreadsheet.run
 The relation between UNO types like any, string, short etc to the corresponding C++ types can be seen at
 [CommonTypes](https://wiki.openoffice.org/wiki/Documentation/DevGuide/FirstSteps/Common_Types)
 
+Refer [UNO Data Types](https://wiki.openoffice.org/wiki/Documentation/DevGuide/ProUNO/Data_Types) for a full coverage on
+the UNO data types. Some of them are explained here.
+
 **Struct type** : These are similar to C++ struct where there are only public member variables only.
 Example
     
@@ -200,6 +203,30 @@ Example :
    aProp.Name = OUString( "Readonly" );
    aProp.Value = makeAny( ( sal_Bool )true );
 ```
+
+Struct may also inherit from other structs.
+
+**Polymorphic struct** : This is a struct with one or more *type parameters* and the members of this struct can have these parameters as
+types.
+
+Example of polymorphic struct :
+
+```
+// A polymorphic struct type template with two type parameters:
+struct Poly<T,U> {
+      T member1;
+      T member2;
+      U member3;
+      long member4;
+};
+```
+Example showing the usage of polymorphic struct :
+
+```
+// Using an instantiation of Poly as a UNO type:
+interface XIfc { Poly<boolean, any> fn(); };
+```
+
 
 **Any type** : This type can hold on to one of the C++ types that are convertible to UNO types.
 To set an `Any` type variable, use `<<=` operator

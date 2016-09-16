@@ -120,12 +120,68 @@ There are two types of services :
   See [Any.hxx](http://opengrok.libreoffice.org/xref/core/include/com/sun/star/uno/Any.hxx).
   Also see [api-reference](http://api.libreoffice.org/docs/cpp/ref/a00264.html).
 
+Services can also contain optional interfaces. This means the service implementation need not implement those interfaces. So when we get objects corresponding
+to optional interfaces from service objects via UNO_QUERY, we should check if the returned Reference is null pointer as shown below.
+```cpp
+Reference<OptionalInterface> result(xExampleServiceObject, UNO_QUERY);
+if ( !result.is() ) {
+   // The optional interface is not implemented, so do fallback procedure or raise exception.
+   return -1;
+}
+// Use the 'result' object
+```
+
+New style services can have constructors similar to interface methods.
+```
+service SomeService: XSomeInterface { 
+      create1();
+      create2([in] long arg1, [in] string arg2);
+      create3([in] any... rest);
+};
+```
+In this example there are three explicit constructors : `create1`, `create2`, `create3`. Unlike interface methods, service constructors do not
+specify a return type.
+The implementation of these constructors would take the component context object of type `com::sun::star::uno::XComponentContext` as first parameter followed
+by any explicit parameters. The service constructors can also have exception specifications (`raises (Exception1, Exception2)`). If the constructor has no
+exception specification, it may only throw runtime exceptions in particular `com::sun::star::uno::DeploymentException`.
+
+If the service specification has no explicit constructor, then the implicit constructor is used for creating its objects which language binding specific but it is
+generally named as `create`. This takes no argument besides `com::sun::star::uno::XComponentContext`
+
+Refer [Service](https://wiki.openoffice.org/wiki/Documentation/DevGuide/ProUNO/Services)
 
 >  The concepts of interfaces and services were introduced for the following reasons :
 
 >  1)  Interfaces and services separate specification from implementation.
 
 >  2)  Service names allow to create instances by specification name, not by class names.
+
+
+## Component
+> A **component** is a shared library or Java archive containing implementations of one or more services in one of the target programming languages supported by UNO. Such a component must meet basic requirements, mostly different for the different target language, and it must support the specification of the implemented services. That means all specified interfaces and properties must be implemented. Components must be registered in the UNO runtime system. After the registration all implemented services can be used by ordering an instance of the service at the appropriate service factory and accessing the functionality over interfaces.
+
+## Component Context
+Component context is a read-only container offering named values. One of the named values is service manager. When a new component is created the *component context* is passed to it. It can also be
+viewed as an environment where all components live.
+
+See the below diagram from OOO wiki showing relationship between Component context and service managers :
+![Component context](https://wiki.openoffice.org/w/images/thumb/c/c2/UseServices1.png/800px-UseServices1.png "ComponentContext and the ServiceManager")
+
+The component context supports `com::sun::star::uno::XComponentContext` interface.
+
+```
+// module com::sun::star::uno
+interface XComponentContext : XInterface
+{
+      any getValueByName( [in] string Name );
+      com::sun::star::lang::XMultiComponentFactory getServiceManager();
+};
+```
+`getServiceManager()` returns the singleton com::sun::star::lang::ServiceManager.
+`getValueByName()` returns named value. The named values can be:
+1. *Singletons* : Example ServiceManager
+2. *Implementation properties*
+3. *Service properties*
 
 
 ## Setup LO SDK after building LO
