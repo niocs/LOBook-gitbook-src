@@ -16,3 +16,4 @@
      * [Part1](extensions/part1.md)
      * [Part2](extensions/part2.md)
      * [Part3](extensions/part3.md)
+     * [Part4](extensions/part4.md)
