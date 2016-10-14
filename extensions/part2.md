@@ -1,5 +1,13 @@
 # Libreoffice extension development with C++ - Part 2 - Working with a Spreadsheet document
 
+### Audience selection
+
+1. Audience type **[AUD-C](README.md)** can skip this part and start with [Part4](part4.md)
+2. Audience type **[AUD-B](README.md)** can jump directly to [code download and build/run section](#buildsec)
+
+___
+
+
 In this part we extend the program developed in Part 1 [code](https://github.com/niocs/UNOCreateUseObject)
 to manipulate the spreadsheet further.
 
@@ -150,14 +158,6 @@ to manipulate the spreadsheet further.
         fflush( stdout );
     }
     ```
-
-The complete C++ program can be compiled and run using :
-
-```bash
-$ git clone https://github.com/niocs/ManipulateSpreadsheet.git
-$ make
-$ make ManipulateSpreadsheet.run
-```
 
 ## Types
 
@@ -345,4 +345,56 @@ If container is heterogenous it returns `void` type.
    ```
 
    We used `getCells()` to get hold of `XEnumerationAccess` object to iterate through the cells with formula.
-   
+
+___
+
+### <a name="buildsec"></a>Download, build and run the program
+
+The complete C++ program can be compiled and run using :
+
+```bash
+$ git clone https://github.com/niocs/ManipulateSpreadsheet.git
+$ cd ManipulateSpreadsheet
+$ make
+$ make ManipulateSpreadsheet.run
+```
+
+After running `make ManipulateSpreadsheet.run` you should see the following strings in the terminal
+```
+remote ServiceManager is available.
+opened spreadsheet document...
+>>> xSpreadsheets container has elements each of type = com.sun.star.sheet.XSpreadsheet
+>>> Formula cell in column = 0, row = 2, with formula = =SUM(A1:A2)
+```
+
+In addition you should see in Calc a sheet named "MySheet" with the following contents :
+* Cell A1 has a number 105
+* Cell A2 has a number 501
+* Cell A3 has a formula = SUM(A1:A2) and has value = 606.
+
+
+#### Troubleshooting :
+
+If you see a crash and stack trace after running `make ManipulateSpreadsheet.run` like
+```
+Application Error
+
+Fatal exception: Signal 6
+Stack:
+/ssd1/work/dennis/core/instdir/program/libuno_sal.so.3(+0x63706)[0x7f9eae7c1706]
+/ssd1/work/dennis/core/instdir/program/libuno_sal.so.3(+0x638ef)[0x7f9eae7c18ef]
+/ssd1/work/dennis/core/instdir/program/libuno_sal.so.3(+0x63a30)[0x7f9eae7c1a30]
+/lib64/libc.so.6(+0x34770)[0x7f9eae04f770]
+/lib64/libc.so.6(gsignal+0x35)[0x7f9eae04f6f5]
+/lib64/libc.so.6(abort+0x16a)[0x7f9eae0512fa]
+...
+```
+you need to go to `/tmp/` in your machine and see if any named pipes belonging to previous LO instances (could be created by LO runs in Part1) that looks like :
+
+```
+OSL_PIPE_1000_SingleOfficeIPC_1198aa9b6c6d53d496efee257b794f7
+OSL_PIPE_1000_uno48105118116146272311915591153248511282101
+```
+Try removing these files before retrying the build/run instructions.
+
+___

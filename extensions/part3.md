@@ -1,11 +1,18 @@
 # Libreoffice extension development with C++ - Part 3 - How UNO objects connect and communicate with each other.
 
+### Audience selection
+
+1. Audience type **[AUD-C](README.md)** can skip this part and start with [Part4](part4.md)
+2. Audience type **[AUD-B](README.md)** can jump directly to [code download and build/run section](#buildsec)
+
+___
+
 > UNO objects in different environments connect via the **interprocess bridge**. You can execute calls on UNO object instances, that are located in a different process. This is done by converting the method name and the arguments into a byte stream representation, and sending this package to the remote process, for example, through a socket connection.
 
 By default LO will not listen on a resource for security reasons. We can make LO listen for UNO connections from external processess by
 starting soffice with extra param :
 ```
-$ soffice --accept="socket,host=0,port=2002;urp;" --calc
+$ $LOROOT/instdir/program/soffice --accept="socket,host=0,port=2002;urp;" --calc
 ```
 
 After running, it can be verified using netstat -na, and it would show something like :
@@ -80,19 +87,34 @@ IV. This specifies the distinct name of the UNO object the server has exported. 
    ```
    Note that the returned object is typed as `Reference< XInterface >` so we need to query for the required interface to use it.
 
-The complete runnable C++ code for the above can be downloaded and run as :
+___
+
+### <a name="buildsec"></a>Download, build and run the program
+
+First run LO as :
+
+```
+$ $LOROOT/instdir/program/soffice --accept="socket,host=0,port=2002;urp;" --calc
+```
+
+Then the C++ code for this section can be downloaded and run as :
 
 ```bash
 $ git clone https://github.com/niocs/ImportingUNOObject.git
+$ cd ImportingUNOObject
 $ make
 $ make ImportUNOObject.run
 ```
+
+If it worked, you will see the string **"Connected successfully to the office"** in the output of `make ImportUNOObject.run`.
 
 If you run the above **before** starting soffice with *listen instructions for port 2002*, the program will show the exception caught and will print something like :
 ```
 Error: Connector : couldn't connect to socket
 ```
 along with some warnings and `make` errors which can be ignored. The above error means the program was not able to connect to soffice to import the UNO object.
+
+___
 
 Usage of UnoUrlResolver has some disadvantages :
 1. We won't be notified when brige terminates.

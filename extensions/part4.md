@@ -1,5 +1,13 @@
 # Libreoffice extension development with C++ - Part 4 - Build a simple Component with two services.
 
+### Audience selection
+
+1. Audience type **[AUD-C](README.md)** can jump directly to **[Test the prebuilt extension](#prebuilt)**
+2. Audience type **[AUD-B](README.md)** can jump directly to **[Download, build and test the extension](#buildsec)**
+
+___
+
+
 Note that reading previous posts are a prerequisite for following this part unless you know how to setup LO SDK env and have a good understanding of UNO concepts.
 
 ## What we are about to do ?
@@ -411,7 +419,10 @@ extern "C" // To skip g++'s function name decorations
 }
 ```
 
-## Steps 5 and 6
+___
+_
+##<a name="buildsec"></a>Download, build and test the extension
+### Steps 5 and 6
 
 In this section we use UNO SDK tools to create C++ header files from .idl files (ours and the dependent LO buildin .idl files) and build the component "SimpleComponent" from service implementation cxx files with the hdl files generated and package it into an extension file named as "SimpleComponent.oxt". Doing these operations manually is tedious hence we have a Makefile reused from the LO SDK's sample extensions.
 
@@ -427,21 +438,19 @@ The extension created (`SimpleComponent.oxt`) by the above will go to a path tha
 You can also see the generated include files from idl files in `/home/dennis/libreoffice5.3_sdk/LINUXexample.out/inc/`.
 
 
-## Step 7
+### Step 7
 
-Now we need to install the extension file `SimpleComponent.oxt` to LO. Run Calc and go to Tools > Extension Manager > Click add button, browse and select `SimpleComponent.oxt` and click on "Only for me" button for the dialog "For whom do you want to install the extension ?". Now exit Calc.
-
-*Note that the LO version and the SDK must match for the extension to work. So if you built LO from git master branch, then use the SDK in `$LOROOT/instdir/sdk/` to build the extension.*
+Now we need to install the extension file `SimpleComponent.oxt` at `/home/$username/libreoffice5.3_sdk/LINUXexample.out/bin/` to LO. Run Calc and go to Tools > Extension Manager > Click add button, browse and select `SimpleComponent.oxt` and click on "Only for me" button for the dialog "For whom do you want to install the extension ?". Now exit Calc.
 
 
-## Step 8
+### Step 8
 
 Lets now test if the extension is working. One way is we can instantiate the services we implemented, via LibreOffice Basic macros. For this we need to enable macros in Calc.
 Go to Tools > Options > Security > Click "Macro Security" > Select the radio button "Medium - Confirmation required before executing macros from unstrusted source". Restart Calc now.
 
 You could either follow the below instruction to setup macro and controls to execute it or just open the `SimpleComponent.ods` provided in the git repo. While opening click enable macros when asked. Now click on the button "Click to test our extension". On clicking if everything went well, it should show the messages from the `MyService1`'s `methodOne()` and `MyService2`'s `methodTwo()`.
 
-### Creating an ods file with macro to access our extension.
+#### Creating an ods file with macro to access our extension.
 Save the sheet as SimpleComponent.ods . Go to Tools > Macros > Organize Macros > LibreofficeDev Basic > Select "Standard" module inside "SimpleComponent.ods" on the left section > Click "New" button on the right section. Now it will open a Macro editor. Now insert the following Basic funtion named `TestMyExtension` to instantiate and call the methods on the two services.
 
 ```vbscript
@@ -465,7 +474,7 @@ End Sub
 
 Lets now create a push button control. Go to View > Toolbars > Form Controls > Click on Design Mode in the new toolbar > Click on pushbutton control and draw in an empty sheet. Right click on the Push button and click "Control..." and change Label to "Click to test our extension". Go to Events tab and set Execution action > Assign Macro > Browse and select `TestMyExtension` macro we created above.
 
-## Step 9
+### Step 9
 
 One other method to test if our extension is working is to create a standalone test C++ main program like we did in [Part 1](part1.md) and [Part 2](part2.md) of this article.
 The complete test program `TestSimpleComponent.cxx` is provided in the git repo. So you could test the extension by issuing
@@ -474,3 +483,22 @@ The complete test program `TestSimpleComponent.cxx` is provided in the git repo.
 $ make TestSimpleComponent.run
 ```
 
+___
+
+
+## <a name="prebuilt"></a>Test the prebuilt extension
+
+Download the extension as :
+```
+$ git clone https://github.com/niocs/SimpleUNOComponent.git
+$ cd SimpleUNOComponent
+```
+
+* In this directory you will see a file called `SimpleComponent.oxt`. This is the prebuilt extension. Now open Calc and and go to Tools > Extension Manager > Click add button, browse and select `SimpleComponent.oxt` and click on "Only for me" button for the dialog "For whom do you want to install the extension ?".
+* Now we need to allow macros in Calc if you have not already. Go to Tools > Options > Security > Click "Macro Security" > Select the radio button "Medium - Confirmation required before executing macros from unstrusted source".
+* Restart Calc now.
+* In the `SimpleUNOComponent/` directory there is a file called `SimpleComponent.ods`. This is a spreadsheet file with macros embedded to test the extension. Open this file with calc. While opening click enable macros when asked.
+* Now click on the button "Click to test our extension" inside the sheet. On clicking, if everything went well, it should show a messagebox showing the text
+
+  ```called methodOne() of Service1 implementation : :SERVICE1:. and called methodTwo() of MyService2 implementation: :SERVICE2:```.
+___

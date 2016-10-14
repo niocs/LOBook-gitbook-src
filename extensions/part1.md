@@ -1,5 +1,12 @@
 # Libreoffice extension development with C++ - Part 1 - Getting to know UNO
 
+### Audience selection
+
+1. Audience type **[AUD-C](README.md)** can skip this part and start with [Part4](part4.md)
+2. Audience type **[AUD-B](README.md)** can jump directly to [code download and build/run section](#buildsec)
+
+___
+
 UNO stands for Universal Network Objects and is the base component technology for LO. For a great coverage on UNO refer to 
 https://wiki.openoffice.org/wiki/Documentation/DevGuide/OpenOffice.org_Developers_Guide. This is mostly compatible with LO as per
 LO dev wiki. This blog is heavily based on this wiki.
@@ -184,51 +191,6 @@ interface XComponentContext : XInterface
 3. *Service properties*
 
 
-## Setup LO SDK after building LO
-
-Go to $LOROOT/instdir/sdk and run :
-```
-$ ./setsdkenv_unix
-```
-hit enter for all questions, letting it use the defaults except for "Automatic deployment of UNO components (YES/NO) [YES]: " type NO.
-
-This will show something like the following after it finishes.
-
-```
- ************************************************************************
- * ... your SDK environment has been prepared.
- * For each time you want to use this configured SDK environment, you
- * have to run the "setsdkenv_unix" script file!
- * Alternatively can you source one of the scripts
- *   "/home/dennis/libreoffice5.3_sdk/dennis-work/setsdkenv_unix.sh"
- * to get an environment without starting a new shell.
- ************************************************************************
-
-
- ************************************************************************
- *
- * SDK environment is prepared for Linux
- *
- * SDK = /ssd1/work/dennis/core/instdir/sdk
- * Office = /ssd1/work/dennis/core/instdir/sdk/..
- * Make = /usr/bin
- * Zip = /usr/bin
- * cat = /usr/bin
- * sed = /usr/bin
- * C++ Compiler = /usr/bin
- * Java = /usr
- * SDK Output directory = /home/dennis/libreoffice5.3_sdk
- * Auto deployment = NO
- *
- ************************************************************************
-```
-
-First section says that **we need to**
-```bash
-$ source /home/dennis/libreoffice5.3_sdk/dennis-work/setsdkenv_unix.sh
-```
-in shell **before** trying to build our own extensions/UNO standalone programs.
-
 ## Example C++ program that shows how to access LO from a standalone program
 
 ```cpp
@@ -318,14 +280,6 @@ Reference< XComponent > xComponent = xDesktop2->loadComponentFromURL(
                                       Sequence < ::com::sun::star::beans::PropertyValue >() );
 ```
 
-The complete C++ program that creates a Desktop object and loads an empty calc document can be built and run as :
-
-```bash
-$ git clone https://github.com/niocs/UNOCreateUseObject.git
-$ make
-$ make CreateUseObject.run
-```
-
 The above is an example of getting an object from another object. There are two different cases for getting objects from other objects :
 
 1. Objects(special ones) that are related to features that are integral part of an object can be obtained by get*() methods.
@@ -336,4 +290,19 @@ The above is an example of getting an object from another object. There are two 
    `Any getPropertyValue( OUString aPropertyName )` (these objects are considered as properties of the main object)
    The type `Any` is explained in next part.
 
+___
 
+### <a name="buildsec"></a>Download, build and run the program
+
+The complete C++ program that creates a Desktop object and loads an empty calc document can be built and run as :
+
+```bash
+$ git clone https://github.com/niocs/UNOCreateUseObject.git
+$ cd UNOCreateUseObject
+$ make
+$ make CreateUseObject.run
+```
+
+If everything goes well you should see the string **"remote ServiceManager is available"** in the output after running `make CreateUseObject.run`.
+
+___
