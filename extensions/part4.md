@@ -440,8 +440,17 @@ You can also see the generated include files from idl files in `/home/dennis/lib
 
 ### Step 7
 
-Now we need to install the extension file `SimpleComponent.oxt` at `/home/$username/libreoffice5.3_sdk/LINUXexample.out/bin/` to LO. Run Calc and go to Tools > Extension Manager > Click add button, browse and select `SimpleComponent.oxt` and click on "Only for me" button for the dialog "For whom do you want to install the extension ?". Now exit Calc.
-
+Now we need to install the extension file `SimpleComponent.oxt` at `/home/$username/libreoffice5.3_sdk/LINUXexample.out/bin/` to LO.
+There are two ways to do this : one via the extension manager and other via `unopkg` commandline tool. Do only one of the following substeps :
+* Extension-Manager method : Open Calc and and go to Tools > Extension Manager > Click add button, browse and select `SimpleComponent.oxt` and click on "Only for me" button for the dialog "For whom do you want to install the extension ?". You may need to restart Calc to take effect.
+* CommandLine method : just run the below command in terminal as normal user.
+  ```
+  $ unopkg add </path/to/>SimpleComponent.oxt
+  ```
+  You can remove an extension with its name (without path) via unopkg, for example to remove SimpleComponent.oxt  :
+  ```
+  $ unopkg remove SimpleComponent.oxt
+  ```
 
 ### Step 8
 
@@ -494,11 +503,24 @@ $ git clone https://github.com/niocs/SimpleUNOComponent.git
 $ cd SimpleUNOComponent
 ```
 
-* In this directory you will see a file called `SimpleComponent.oxt`. This is the prebuilt extension. Now open Calc and and go to Tools > Extension Manager > Click add button, browse and select `SimpleComponent.oxt` and click on "Only for me" button for the dialog "For whom do you want to install the extension ?".
-* Now we need to allow macros in Calc if you have not already. Go to Tools > Options > Security > Click "Macro Security" > Select the radio button "Medium - Confirmation required before executing macros from unstrusted source".
-* Restart Calc now.
+* In `SimpleUNOComponent` directory you will see a file called `SimpleComponent.oxt`. This is the prebuilt extension.
+* There are two recommended ways of installing extensions - one via the extension manager and other via `unopkg` commandline tool. Do only one of the following substeps :
+  * Extension-Manager method : Open Calc and and go to Tools > Extension Manager > Click add button, browse and select `SimpleComponent.oxt` and click on "Only for me" button for the dialog "For whom do you want to install the extension ?". You may need to restart Calc to take effect.
+  * CommandLine method : just run the below command in terminal as normal user.
+    ```
+    $ unopkg add </path/to/>SimpleComponent.oxt
+    ```
+    You can remove an extension with its name (without path) via unopkg, for example to remove SimpleComponent.oxt  :
+    ```
+    $ unopkg remove SimpleComponent.oxt
+    ```
+* Now we need to allow macros in Calc if you have not already. Open Calc and go to Tools > Options > Security > Click "Macro Security" > Select the radio button "Medium - Confirmation required before executing macros from unstrusted source". Restart Calc. This is a one time process.
 * In the `SimpleUNOComponent/` directory there is a file called `SimpleComponent.ods`. This is a spreadsheet file with macros embedded to test the extension. Open this file with calc. While opening click enable macros when asked.
 * Now click on the button "Click to test our extension" inside the sheet. On clicking, if everything went well, it should show a messagebox showing the text
 
   ```called methodOne() of Service1 implementation : :SERVICE1:. and called methodTwo() of MyService2 implementation: :SERVICE2:```.
 ___
+
+**Note 1** : *There can only be one soffice process per user per host, if one soffice process is running and you try to open a document with another soffice command via terminal, this request will be transfered to the already running soffice process and the document will be opened in a new window of the same process*.
+
+**Note 2** : *An installed extension is common to all documents opened by soffice, there is no concept of per document extension. The extension should be prepared to handle the presence of multiple documents/ or calls from them*
