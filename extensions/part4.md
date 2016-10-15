@@ -524,3 +524,124 @@ ___
 **Note 1** : *There can only be one soffice process per user per host, if one soffice process is running and you try to open a document with another soffice command via terminal, this request will be transfered to the already running soffice process and the document will be opened in a new window of the same process*.
 
 **Note 2** : *An installed extension is common to all documents opened by soffice, there is no concept of per document extension. The extension should be prepared to handle the presence of multiple documents/ or calls from them*
+
+___
+
+## [Advanced] Commands for building the extension without using Makefile
+
+1. First we create the directory `/home/$username/extensions/` and its sub directory `misc/SimpleComponent/` to store the .urd file(s) (UNO reflection data) containing binary type descriptions.
+
+   ```
+   $ mkdir -p /home/$username/extensions/misc/SimpleComponent
+   $ $LOROOT/instdir/sdk/bin/idlc -I. -I$LOROOT/instdir/sdk/idl -O/home/$username/extensions/misc/SimpleComponent some.idl
+   ```
+   This creates the file `/home/$username/extensions/misc/SimpleComponent/some.urd`
+
+2. Merge the .urd files into a registry database using regmerge. The registry database files have the extension .rdb (registry database). They contain binary data describing types in a tree-like structure starting with / as the root. The default key for type descriptions is the /UCR key (UNO core reflection).
+
+   ```
+   $ $LOROOT/instdir/program/regmerge \
+       /home/$username/extensions/misc/SimpleComponent/SimpleComponent.uno.rdb \
+       /UCR /home/$username/extensions/misc/SimpleComponent/some.urd
+   ```
+   This will produce the file `/home/$username/extensions/misc/SimpleComponent/SimpleComponent.uno.rdb`.
+
+3. This is a **one time step**, generate C++ header files for all of sdk's uno types from the LO's rdb files and put into `/home/$username/extensions/inc`, the common include location used for all of our future extensions including current one.
+
+   ```
+   $ mkdir -p /home/$username/extensions/inc
+   $ $LOROOT/instdir/sdk/bin/cppumaker -Gc -O/home/$username/extensions/inc  \
+                                       $LOROOT/instdir/program/types.rdb \
+                                       $LOROOT/instdir/program/types/offapi.rdb
+   ```
+
+4. Generate C++ header files (hpp and hdl) for **new** types and their dependencies from rdb files. 
+
+   ```
+   $ mkdir -p /home/$username/extensions/inc/SimpleComponent
+   $ $LOROOT/instdir/sdk/bin/cppumaker -Gc -O/home/$username/extensions/inc/SimpleComponent  \
+                                       -Tinco.niocs.test.XSomething -Tinco.niocs.test.MyService1 -Tinco.niocs.test.MyService2 \
+                                       /home/$username/extensions/misc/SimpleComponent/SimpleComponent.uno.rdb \
+                                       -X$LOROOT/instdir/program/types.rdb -X$LOROOT/instdir/program/types/offapi.rdb
+   ```
+
+   In our case it will produce the following four files in `/home/$username/extensions/inc/SimpleComponent/inco/niocs/test/`
+
+   ```
+   MyService1.hpp
+   XSomething.hpp
+   XSomething.hdl
+   MyService2.hpp
+   ```
+
+5. Compile `service1_impl.cxx` and `service2_impl.cxx` using the generated header files and sdk include files to create object files (*.o) and place them in `/home/$username/extensions/slo/SimpleComponent`.
+
+   ```
+   $ mkdir -p /home/$username/extensions/slo/SimpleComponent
+   $ gcc -c -fpic -fvisibility=hidden -O -I. -I/home/$username/extensions/inc \
+         -I/home/$username/extensions/inc/examples -I$LOROOT/instdir/sdk/include \
+         -I/home/$username/extensions/inc/SimpleComponent \
+         -DUNX -DGCC -DLINUX -DCPPU_ENV=gcc3 \
+         -o/home/$username/extensions/slo/SimpleComponent/service1_impl.o service1_impl.cxx
+
+   $ gcc -c -fpic -fvisibility=hidden -O -I. -I/home/$username/extensions/inc \
+         -I/home/$username/extensions/inc/examples -I$LOROOT/instdir/sdk/include \
+         -I/home/$username/extensions/inc/SimpleComponent \
+         -DUNX -DGCC -DLINUX -DCPPU_ENV=gcc3 \
+         -o/home/$username/extensions/slo/SimpleComponent/service2_impl.o service2_impl.cxx
+   ```
+
+6. Create shared library (.so file) from the object files created in step 5 by linking with the sdk libs - cppu, cppuhelper and sal and place it in `/home/$username/extensions/lib/`
+
+   ```
+   $ mkdir -p /home/$username/extensions/lib
+   $ g++ -shared -Wl,-z,origin '-Wl,-rpath,' -L/home/$username/extensions/lib \
+         -L$LOROOT/instdir/sdk/lib -L$LOROOT/instdir/program \
+         -o /home/$username/extensions/lib/SimpleComponent.uno.so \
+         /home/$username/extensions/slo/SimpleComponent/service1_impl.o \
+         /home/$username/extensions/slo/SimpleComponent/service2_impl.o \
+         -luno_cppuhelpergcc3 -luno_cppu -luno_sal 
+   ```
+   We have finished creating the main part of the extension, now we need to package into a zip file along with meta files and the rdb file.
+
+7. Remember that we already have `SimpleComponent.uno.rdb` in the path `/home/$username/extensions/misc/SimpleComponent`. Now create the `META-INF/manifest.xml` and `SimpleComponent.components` in `/home/$username/extensions/misc/SimpleComponent/` with the following contents :
+
+   **manifest.xml** : This xml file tells LO extension manager where to find the rdb file and a file `SimpleComponent.components` which would point to the .so shared lib.
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <!DOCTYPE manifest:manifest PUBLIC "-//OpenOffice.org//DTD Manifest 1.0//EN" "Manifest.dtd">
+   <manifest:manifest xmlns:manifest="http://openoffice.org/2001/manifest">
+       <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-typelibrary;type=RDB"
+                       manifest:full-path="SimpleComponent.uno.rdb"/>
+       <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-components;platform=Linux_x86_64"
+                       manifest:full-path="SimpleComponent.components"/>
+   </manifest:manifest>
+   ```
+
+   **SimpleComponent.components** : This is an xml file which tells the LO extension manager where to find the shared library and what all services are implemented along with the fully qualified implementation names.
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <components xmlns="http://openoffice.org/2010/uno-components">
+       <component loader="com.sun.star.loader.SharedLibrary" uri="Linux_x86_64/SimpleComponent.uno.so">
+           <implementation name="inco.niocs.test.my_sc_impl.MyService1">
+               <service name="inco.niocs.test.MyService1"/>
+           </implementation>
+           <implementation name="inco.niocs.test.my_sc_impl.MyService2">
+               <service name="inco.niocs.test.MyService2"/>
+           </implementation>
+       </component>
+   </components>
+   ```
+
+   Copy the shared lib to `/home/$username/extensions/misc/SimpleComponent/Linux_x86_64`. We don't need the some.urd file anymore.
+   Next we zip the contents in `/home/$username/extensions/misc/SimpleComponent` to a zip file named `SimpleComponent.oxt` in `/home/$username/extensions/bin/`
+   ```
+   $ mkdir -p /home/$username/extensions/misc/SimpleComponent/Linux_x86_64
+   $ cp /home/$username/extensions/lib/SimpleComponent.uno.so /home/$username/extensions/misc/SimpleComponent/Linux_x86_64
+   $ rm /home/$username/extensions/misc/SimpleComponent/some.urd
+   $ cd /home/$username/extensions/misc/SimpleComponent/
+   $ mkdir -p /home/$username/extensions/bin/
+   $ zip -r ../../bin/SimpleComponent.oxt *
+   
+   ```
+   The file `SimpleComponent.oxt` is the extension and can be installed to LO using `unopkg` command or LO extension manager.
