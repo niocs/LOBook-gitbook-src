@@ -519,13 +519,9 @@ $ cd SimpleUNOComponent
 * Now click on the button "Click to test our extension" inside the sheet. On clicking, if everything went well, it should show a messagebox showing the text
 
   ```called methodOne() of Service1 implementation : :SERVICE1:. and called methodTwo() of MyService2 implementation: :SERVICE2:```.
-___
-
-**Note 1** : *There can only be one soffice process per user per host, if one soffice process is running and you try to open a document with another soffice command via terminal, this request will be transfered to the already running soffice process and the document will be opened in a new window of the same process*.
-
-**Note 2** : *An installed extension is common to all documents opened by soffice, there is no concept of per document extension. The extension should be prepared to handle the presence of multiple documents/ or calls from them*
 
 ___
+
 
 ## [Advanced] Commands for building the extension without using Makefile
 

@@ -16,3 +16,6 @@ This is a ongoing series of posts on developing C++ LO extensions mainly for Cal
 
    Prerequisites : Access to a **Fedora 24 Linux 64 bit** box (as we supply prebuilt extensions only for this distro), LibreOffice Calc version >= 5.1. You can skip Part1, Part2 and Part3 as they do not create extensions. [Part4](part4.md) is your starting point.
 
+
+
+Regardless of the type of audience, the reader may want to read the [Pre-FAQ](prefaq.md) to get some general understanding of the way LO-extensions behave.

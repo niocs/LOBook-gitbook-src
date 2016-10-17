@@ -14,6 +14,7 @@
      * [namespaces](misc/namespaces.md)
      * [patchchecklist](misc/patchchecklist.md)
 * [LibreOffice extensions](extensions/README.md)
+     * [PreFAQ](extensions/prefaq.md)
      * [Part1](extensions/part1.md)
      * [Part2](extensions/part2.md)
      * [Part3](extensions/part3.md)
