@@ -286,5 +286,5 @@ To remove this extension do :
 $ unopkg remove SimpleAddonExtension.oxt
 ```
 
-On opening calc you should see the top level menu called `Add-On example` with menu entries `Make text Bold` and `Make text Italic`. Add some text to any cell and try clicking on the new menu items and see if the text gets bold/italicized. The two new toolbar icons ![date icon](date.png) and ![time icon](time.png) also should be visible. Clicking them would not produce any results though. You should also notice that the new menu don't appear in Writer or Impress.
+On opening calc you should see the top level menu called `Add-On example` with menu entries `Make text Bold` and `Make text Italic`. Add some text to any cell and try clicking on the new menu items and see if the text gets bold/italicized. The two new toolbar icons ![date icon](date.png) and ![time icon](time.png) also should be visible. Clicking them would not produce any results though. You should also notice that the new menu does not appear in Writer or Impress or Draw.
 
