@@ -420,7 +420,7 @@ extern "C" // To skip g++'s function name decorations
 ```
 
 ___
-_
+
 ##<a name="buildsec"></a>Download, build and test the extension
 ### Steps 5 and 6
 
@@ -445,11 +445,11 @@ There are two ways to do this : one via the extension manager and other via `uno
 * Extension-Manager method : Open Calc and and go to Tools > Extension Manager > Click add button, browse and select `SimpleComponent.oxt` and click on "Only for me" button for the dialog "For whom do you want to install the extension ?". You may need to restart Calc to take effect.
 * CommandLine method : just run the below command in terminal as normal user.
   ```
-  $ unopkg add </path/to/>SimpleComponent.oxt
+  $ $LOROOT/instdir/program/unopkg add </path/to/>SimpleComponent.oxt
   ```
   You can remove an extension with its name (without path) via unopkg, for example to remove SimpleComponent.oxt  :
   ```
-  $ unopkg remove SimpleComponent.oxt
+  $ $LOROOT/instdir/program/unopkg remove SimpleComponent.oxt
   ```
 
 ### Step 8
