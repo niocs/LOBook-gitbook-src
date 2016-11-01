@@ -21,3 +21,4 @@
      * [Part4 Simple component](extensions/part4.md)
      * [Part5 Addon](extensions/part5.md)
      * [Part6 ProtocolHandler extension](extensions/part6.md)
+     * [Part7 AsyncJob extension](extensions/part7.md)
