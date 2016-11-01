@@ -44,14 +44,14 @@ public:
     AsyncJobImpl( const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext > &rxContext )
         : mxContext( rxContext )
     {
-	printf("DEBUG>>> Created AsyncJobImpl object : %p\n", this); fflush(stdout);
+        printf("DEBUG>>> Created AsyncJobImpl object : %p\n", this); fflush(stdout);
     }
 
     // XAsyncJob methods
     virtual void SAL_CALL executeAsync( const ::com::sun::star::uno::Sequence< ::com::sun::star::beans::NamedValue >& rArgs,
-					const ::com::sun::star::uno::Reference< ::com::sun::star::task::XJobListener >& rxListener )
-	throw(::com::sun::star::lang::IllegalArgumentException,
-	      ::com::sun::star::uno::RuntimeException) override;
+                                        const ::com::sun::star::uno::Reference< ::com::sun::star::task::XJobListener >& rxListener )
+        throw(::com::sun::star::lang::IllegalArgumentException,
+              ::com::sun::star::uno::RuntimeException) override;
 
     // XServiceInfo methods
     virtual ::rtl::OUString SAL_CALL getImplementationName()
@@ -64,23 +64,23 @@ public:
     // A struct to store some job related info when executeAsync() is called
     struct AsyncJobImplInfo
     {
-	::rtl::OUString aEnvType;
-	::rtl::OUString aEventName;
-	::rtl::OUString aAlias;
-	::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame > xFrame;
+        ::rtl::OUString aEnvType;
+        ::rtl::OUString aEventName;
+        ::rtl::OUString aAlias;
+        ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame > xFrame;
 
-	::rtl::OUString aGenericConfigList, aJobConfigList, aEnvironmentList, aDynamicDataList;
+        ::rtl::OUString aGenericConfigList, aJobConfigList, aEnvironmentList, aDynamicDataList;
     };
 
 private:
 
     ::rtl::OUString validateGetInfo( const ::com::sun::star::uno::Sequence< ::com::sun::star::beans::NamedValue >& rArgs,
-				     const ::com::sun::star::uno::Reference< ::com::sun::star::task::XJobListener >& rxListener,
-				     AsyncJobImplInfo& rJobInfo );
+                                     const ::com::sun::star::uno::Reference< ::com::sun::star::task::XJobListener >& rxListener,
+                                     AsyncJobImplInfo& rJobInfo );
     
     void formatOutArgs( const ::com::sun::star::uno::Sequence< ::com::sun::star::beans::NamedValue >& rList,
-			const ::rtl::OUString aListName,
-			::rtl::OUString& rFormattedList );
+                        const ::rtl::OUString aListName,
+                        ::rtl::OUString& rFormattedList );
 
     void writeInfoToSheet( const AsyncJobImplInfo& rJobInfo );
 };
@@ -107,7 +107,7 @@ Following are the implementations of these methods :
 // XAsyncJob method implementations
 
 void SAL_CALL AsyncJobImpl::executeAsync( const Sequence<NamedValue>& rArgs,
-					  const Reference<XJobListener>& rxListener )
+                                          const Reference<XJobListener>& rxListener )
     throw(IllegalArgumentException, RuntimeException)
 {
     printf("DEBUG>>> Called executeAsync() : this = %p\n", this); fflush(stdout);
@@ -116,15 +116,15 @@ void SAL_CALL AsyncJobImpl::executeAsync( const Sequence<NamedValue>& rArgs,
     OUString aErr = validateGetInfo( rArgs, rxListener, aJobInfo );
     if ( !aErr.isEmpty() )
     {
-	sal_Int16 nArgPos = 0;	
-	if ( aErr.startsWith( "Listener" ) )
-	    nArgPos = 1;
+        sal_Int16 nArgPos = 0;        
+        if ( aErr.startsWith( "Listener" ) )
+            nArgPos = 1;
 
-	throw IllegalArgumentException(
-	    aErr,
-	    // resolve to XInterface reference:
-	    static_cast< ::cppu::OWeakObject * >(this),
-	    nArgPos ); // argument pos
+        throw IllegalArgumentException(
+            aErr,
+            // resolve to XInterface reference:
+            static_cast< ::cppu::OWeakObject * >(this),
+            nArgPos ); // argument pos
     }
     
     writeInfoToSheet( aJobInfo );
@@ -134,12 +134,12 @@ void SAL_CALL AsyncJobImpl::executeAsync( const Sequence<NamedValue>& rArgs,
 
     if ( bIsDispatch )
     {
-	aReturn[0].Name  = "SendDispatchResult";
-	DispatchResultEvent aResultEvent;
-	aResultEvent.Source = (cppu::OWeakObject*)this;
-	aResultEvent.State = DispatchResultState::SUCCESS;
-	aResultEvent.Result <<= true;
-	aReturn[0].Value <<= aResultEvent;
+        aReturn[0].Name  = "SendDispatchResult";
+        DispatchResultEvent aResultEvent;
+        aResultEvent.Source = (cppu::OWeakObject*)this;
+        aResultEvent.State = DispatchResultState::SUCCESS;
+        aResultEvent.Result <<= true;
+        aReturn[0].Value <<= aResultEvent;
     }
 
     rxListener->jobFinished( Reference<com::sun::star::task::XAsyncJob>(this), makeAny(aReturn));
@@ -148,11 +148,11 @@ void SAL_CALL AsyncJobImpl::executeAsync( const Sequence<NamedValue>& rArgs,
 
 
 OUString AsyncJobImpl::validateGetInfo( const Sequence<NamedValue>& rArgs,
-					const Reference<XJobListener>& rxListener,
-					AsyncJobImpl::AsyncJobImplInfo& rJobInfo )
+                                        const Reference<XJobListener>& rxListener,
+                                        AsyncJobImpl::AsyncJobImplInfo& rJobInfo )
 {
     if ( !rxListener.is() )
-	return "Listener : invalid listener";
+        return "Listener : invalid listener";
 
     // Extract all sublists from rArgs.
     Sequence<NamedValue> aGenericConfig;
@@ -163,60 +163,60 @@ OUString AsyncJobImpl::validateGetInfo( const Sequence<NamedValue>& rArgs,
     sal_Int32 nNumNVs = rArgs.getLength();
     for ( sal_Int32 nIdx = 0; nIdx < nNumNVs; ++nIdx )
     {
-	if ( rArgs[nIdx].Name.equalsAscii("Config") )
-	{
-	    rArgs[nIdx].Value >>= aGenericConfig;
-	    formatOutArgs( aGenericConfig, "Config", rJobInfo.aGenericConfigList );
-	}
-	else if ( rArgs[nIdx].Name.equalsAscii("JobConfig") )
-	{
-	    rArgs[nIdx].Value >>= aJobConfig;
-	    formatOutArgs( aJobConfig, "JobConfig", rJobInfo.aJobConfigList );
-	}
-	else if ( rArgs[nIdx].Name.equalsAscii("Environment") )
-	{
-	    rArgs[nIdx].Value >>= aEnvironment;
-	    formatOutArgs( aEnvironment, "Environment", rJobInfo.aEnvironmentList );
-	}
-	else if ( rArgs[nIdx].Name.equalsAscii("DynamicData") )
-	{
-	    rArgs[nIdx].Value >>= aDynamicData;
-	    formatOutArgs( aDynamicData, "DynamicData", rJobInfo.aDynamicDataList );
-	}
+        if ( rArgs[nIdx].Name.equalsAscii("Config") )
+        {
+            rArgs[nIdx].Value >>= aGenericConfig;
+            formatOutArgs( aGenericConfig, "Config", rJobInfo.aGenericConfigList );
+        }
+        else if ( rArgs[nIdx].Name.equalsAscii("JobConfig") )
+        {
+            rArgs[nIdx].Value >>= aJobConfig;
+            formatOutArgs( aJobConfig, "JobConfig", rJobInfo.aJobConfigList );
+        }
+        else if ( rArgs[nIdx].Name.equalsAscii("Environment") )
+        {
+            rArgs[nIdx].Value >>= aEnvironment;
+            formatOutArgs( aEnvironment, "Environment", rJobInfo.aEnvironmentList );
+        }
+        else if ( rArgs[nIdx].Name.equalsAscii("DynamicData") )
+        {
+            rArgs[nIdx].Value >>= aDynamicData;
+            formatOutArgs( aDynamicData, "DynamicData", rJobInfo.aDynamicDataList );
+        }
     }
 
     // Analyze the environment info. This sub list is the only guaranteed one!
     if ( !aEnvironment.hasElements() )
-	return "Args : no environment";
+        return "Args : no environment";
 
     sal_Int32 nNumEnvEntries = aEnvironment.getLength();
     for ( sal_Int32 nIdx = 0; nIdx < nNumEnvEntries; ++nIdx )
     {
-	if ( aEnvironment[nIdx].Name.equalsAscii("EnvType") )
-	    aEnvironment[nIdx].Value >>= rJobInfo.aEnvType;
-	
-	else if ( aEnvironment[nIdx].Name.equalsAscii("EventName") )
-	    aEnvironment[nIdx].Value >>= rJobInfo.aEventName;
+        if ( aEnvironment[nIdx].Name.equalsAscii("EnvType") )
+            aEnvironment[nIdx].Value >>= rJobInfo.aEnvType;
+        
+        else if ( aEnvironment[nIdx].Name.equalsAscii("EventName") )
+            aEnvironment[nIdx].Value >>= rJobInfo.aEventName;
 
-	else if ( aEnvironment[nIdx].Name.equalsAscii("Frame") )
-	    aEnvironment[nIdx].Value >>= rJobInfo.xFrame;
+        else if ( aEnvironment[nIdx].Name.equalsAscii("Frame") )
+            aEnvironment[nIdx].Value >>= rJobInfo.xFrame;
     }
 
     // Further the environment property "EnvType" is required as minimum.
 
     if ( rJobInfo.aEnvType.isEmpty() ||
-	 ( ( !rJobInfo.aEnvType.equalsAscii("EXECUTOR") ) &&
-	   ( !rJobInfo.aEnvType.equalsAscii("DISPATCH") )
-	     )	)
-	return OUString("Args : \"" + rJobInfo.aEnvType + "\" isn't a valid value for EnvType");
+         ( ( !rJobInfo.aEnvType.equalsAscii("EXECUTOR") ) &&
+           ( !rJobInfo.aEnvType.equalsAscii("DISPATCH") )
+             )        )
+        return OUString("Args : \"" + rJobInfo.aEnvType + "\" isn't a valid value for EnvType");
 
     // Analyze the set of shared config data.
     if ( aGenericConfig.hasElements() )
     {
-	sal_Int32 nNumGenCfgEntries = aGenericConfig.getLength();
-	for ( sal_Int32 nIdx = 0; nIdx < nNumGenCfgEntries; ++nIdx )
-	    if ( aGenericConfig[nIdx].Name.equalsAscii("Alias") )
-		aGenericConfig[nIdx].Value >>= rJobInfo.aAlias;
+        sal_Int32 nNumGenCfgEntries = aGenericConfig.getLength();
+        for ( sal_Int32 nIdx = 0; nIdx < nNumGenCfgEntries; ++nIdx )
+            if ( aGenericConfig[nIdx].Name.equalsAscii("Alias") )
+                aGenericConfig[nIdx].Value >>= rJobInfo.aAlias;
     }
 
     return "";
@@ -224,24 +224,24 @@ OUString AsyncJobImpl::validateGetInfo( const Sequence<NamedValue>& rArgs,
 
 
 void AsyncJobImpl::formatOutArgs( const Sequence<NamedValue>& rList,
-				  const OUString aListName,
-				  OUString& rFormattedList )
+                                  const OUString aListName,
+                                  OUString& rFormattedList )
 {
     OUStringBuffer aBuf( 512 );
     aBuf.append("List \"" + aListName + "\" : ");
     if ( !rList.hasElements() )
-	aBuf.append("0 items");
+        aBuf.append("0 items");
     else
     {
-	sal_Int32 nNumEntries = rList.getLength();
-	aBuf.append(nNumEntries).append(" item(s) : { ");
-	for ( sal_Int32 nIdx = 0; nIdx < nNumEntries; ++nIdx )
-	{
-	    OUString aVal;
-	    rList[nIdx].Value >>= aVal;
-	    aBuf.append("\"" + rList[nIdx].Name + "\" : \"" + aVal + "\", ");
-	}
-	aBuf.append(" }");
+        sal_Int32 nNumEntries = rList.getLength();
+        aBuf.append(nNumEntries).append(" item(s) : { ");
+        for ( sal_Int32 nIdx = 0; nIdx < nNumEntries; ++nIdx )
+        {
+            OUString aVal;
+            rList[nIdx].Value >>= aVal;
+            aBuf.append("\"" + rList[nIdx].Name + "\" : \"" + aVal + "\", ");
+        }
+        aBuf.append(" }");
     }
 
     rFormattedList = aBuf.toString();
@@ -251,23 +251,23 @@ void AsyncJobImpl::formatOutArgs( const Sequence<NamedValue>& rList,
 void WriteStringsToSheet( const Reference< XFrame > &rxFrame, const std::vector<OUString>& rStrings )
 {
     if ( !rxFrame.is() )
-	return;
+        return;
     
     Reference< XController > xCtrl = rxFrame->getController();
     if ( !xCtrl.is() )
-	return;
+        return;
 
     Reference< XModel > xModel = xCtrl->getModel();
     if ( !xModel.is() )
-	return;
+        return;
 
     Reference< XSpreadsheetDocument > xSpreadsheetDocument( xModel, UNO_QUERY );
     if ( !xSpreadsheetDocument.is() )
-	return;
+        return;
 
     Reference< XSpreadsheets > xSpreadsheets = xSpreadsheetDocument->getSheets();
     if ( !xSpreadsheets->hasByName("Sheet1") )
-	return;
+        return;
 
     Any aSheet = xSpreadsheets->getByName("Sheet1");
 
@@ -276,10 +276,10 @@ void WriteStringsToSheet( const Reference< XFrame > &rxFrame, const std::vector<
     size_t nNumStrings = rStrings.size();
     for ( size_t nIdx = 0; nIdx < nNumStrings; ++nIdx )
     {
-	Reference< XCell > xCell = xSpreadsheet->getCellByPosition(0, nIdx);
-	xCell->setFormula(rStrings[nIdx]);
-	printf("DEBUG>>> Wrote \"%s\" to Cell A%d\n",
-	       OUStringToOString( rStrings[nIdx], RTL_TEXTENCODING_ASCII_US ).getStr(), nIdx); fflush(stdout);
+        Reference< XCell > xCell = xSpreadsheet->getCellByPosition(0, nIdx);
+        xCell->setFormula(rStrings[nIdx]);
+        printf("DEBUG>>> Wrote \"%s\" to Cell A%d\n",
+               OUStringToOString( rStrings[nIdx], RTL_TEXTENCODING_ASCII_US ).getStr(), nIdx); fflush(stdout);
     }
 }
 
@@ -287,17 +287,17 @@ void AsyncJobImpl::writeInfoToSheet( const AsyncJobImpl::AsyncJobImplInfo& rJobI
 {
     if ( !rJobInfo.xFrame.is() )
     {
-	printf("DEBUG>>> Frame passed is null, cannot write to sheet !\n");
-	fflush(stdout);
+        printf("DEBUG>>> Frame passed is null, cannot write to sheet !\n");
+        fflush(stdout);
     }
     std::vector<OUString> aStrList = {
-	"EnvType = " + rJobInfo.aEnvType,
-	"EventName = " + rJobInfo.aEventName,
-	"Alias = " + rJobInfo.aAlias,
-	rJobInfo.aGenericConfigList,
-	rJobInfo.aJobConfigList,
-	rJobInfo.aEnvironmentList,
-	rJobInfo.aDynamicDataList
+        "EnvType = " + rJobInfo.aEnvType,
+        "EventName = " + rJobInfo.aEventName,
+        "Alias = " + rJobInfo.aAlias,
+        rJobInfo.aGenericConfigList,
+        rJobInfo.aJobConfigList,
+        rJobInfo.aEnvironmentList,
+        rJobInfo.aDynamicDataList
     };
 
     WriteStringsToSheet( rJobInfo.xFrame, aStrList );
@@ -316,7 +316,7 @@ We specify our job's alias, attached events in an xml file called `Job.xcu`.
 ```xml
 <oor:component-data oor:name="Jobs" oor:package="org.openoffice.Office" xmlns:oor="http://openoffice.org/2001/registry" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <node oor:name="Jobs">
-	<!--            vvvvvvvvvvv    AsyncJobImpl is the alias -->
+        <!--            vvvvvvvvvvv    AsyncJobImpl is the alias -->
         <node oor:name="AsyncJobImpl" oor:op="replace">
             <prop oor:name="Service" oor:type="xs:string">
                 <value>inco.niocs.test.AsyncJobImpl</value>
@@ -324,13 +324,13 @@ We specify our job's alias, attached events in an xml file called `Job.xcu`.
         </node>
     </node>
     <node oor:name="Events">
-	<!--
+        <!--
         <node oor:name="onFirstVisibleTask" oor:op="modify">
             <node oor:name="JobList">
                 <node oor:name="AsyncJobImpl" oor:op="replace"/>
             </node>
         </node>
-	-->
+        -->
         <node oor:name="onMyOwnJobEvent" oor:op="replace">
             <node oor:name="JobList">
                 <node oor:name="AsyncJobImpl" oor:op="replace"/>
@@ -366,7 +366,7 @@ We now add menu entries to call our job in the three different ways discussed be
                             <value>com.sun.star.sheet.SpreadsheetDocument</value>
                         </prop>
                     </node>
-		    <node oor:name="m2" oor:op="replace">
+                    <node oor:name="m2" oor:op="replace">
                         <prop oor:name="URL" oor:type="xs:string">
                             <value>vnd.sun.star.job:event=onMyOwnJobEvent</value>
                         </prop>
@@ -380,7 +380,7 @@ We now add menu entries to call our job in the three different ways discussed be
                             <value>com.sun.star.sheet.SpreadsheetDocument</value>
                         </prop>
                     </node>
-		    <node oor:name="m3" oor:op="replace">
+                    <node oor:name="m3" oor:op="replace">
                         <prop oor:name="URL" oor:type="xs:string">
                             <value>vnd.sun.star.job:service=inco.niocs.test.AsyncJobImpl</value>
                         </prop>
