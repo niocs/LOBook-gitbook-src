@@ -455,7 +455,7 @@ There are two ways to do this : one via the extension manager and other via `uno
 ### Step 8
 
 Lets now test if the extension is working. One way is we can instantiate the services we implemented, via LibreOffice Basic macros. For this we need to enable macros in Calc.
-Go to Tools > Options > Security > Click "Macro Security" > Select the radio button "Medium - Confirmation required before executing macros from unstrusted source". Restart Calc now.
+Go to Tools > Options > Security > Click "Macro Security" > Select the radio button "Medium - Confirmation required before executing macros from untrusted source". Restart Calc now.
 
 You could either follow the below instruction to setup macro and controls to execute it or just open the `SimpleComponent.ods` provided in the git repo. While opening click enable macros when asked. Now click on the button "Click to test our extension". On clicking if everything went well, it should show the messages from the `MyService1`'s `methodOne()` and `MyService2`'s `methodTwo()`.
 
@@ -514,7 +514,7 @@ $ cd SimpleUNOComponent
     ```
     $ unopkg remove SimpleComponent.oxt
     ```
-* Now we need to allow macros in Calc if you have not already. Open Calc and go to Tools > Options > Security > Click "Macro Security" > Select the radio button "Medium - Confirmation required before executing macros from unstrusted source". Restart Calc. This is a one time process.
+* Now we need to allow macros in Calc if you have not already. Open Calc and go to Tools > Options > Security > Click "Macro Security" > Select the radio button "Medium - Confirmation required before executing macros from untrusted source". Restart Calc. This is a one time process.
 * In the `SimpleUNOComponent/` directory there is a file called `SimpleComponent.ods`. This is a spreadsheet file with macros embedded to test the extension. Open this file with calc. While opening click enable macros when asked.
 * Now click on the button "Click to test our extension" inside the sheet. On clicking, if everything went well, it should show a messagebox showing the text
 

@@ -405,7 +405,7 @@ We now add menu entries to call our job in the three different ways discussed be
 
 **Please remember to remove any previous extensions from Part5/Part6 using `$LOROOT/instdir/program/unopkg remove`**
 
-The whole project can be downloaded and built be doing :
+The whole project can be downloaded and built by doing :
 
 ```
 $ git clone https://github.com/niocs/AsyncJobExtension.git
