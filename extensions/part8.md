@@ -7,7 +7,7 @@
 
 ___
 
-A *singleton component* is one which is instantiated just one during the whole lifetime of LO process. This may be useful for holding resources that are common to all other component instances. For example if we want to maintain a single long running TCP connection to external server process, we could let a singleton component hold and maintain the network connection.
+A *singleton component* is one which is instantiated just once during the whole lifetime of LO process. This may be useful for holding resources that are common to all other component instances. For example if we want to maintain a single long running TCP connection to external server process, we could let a singleton component hold and maintain the network connection.
 
 In this part we create a singleton component that simulates a single bit global storage that implements a custom interface called `inco::niocs::test::XBoolDataStore` which has the following methods :
 1. `getBool()` returns the boolean state stored by the implementation.
