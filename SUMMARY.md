@@ -24,3 +24,4 @@
      * [Part7 AsyncJob extension](extensions/part7.md)
      * [Part8 SingletonComponent](extensions/part8.md)
      * [Part9 ContextMenu](extensions/part9.md)
+     * [Part10 SP500Addin](extensions/part10.md)
