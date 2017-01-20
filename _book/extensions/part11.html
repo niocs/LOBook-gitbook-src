@@ -5,7 +5,7 @@
         
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=11; IE=10; IE=9; IE=8; IE=7; IE=EDGE" />
-        <title>Part9 ContextMenu | Libreoffice Blog</title>
+        <title>Part11 StockStreamer | Libreoffice Blog</title>
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
         <meta name="generator" content="GitBook 2.0.2">
@@ -20,10 +20,8 @@
         
     
     
-    <link rel="next" href="../extensions/part10.html" />
     
-    
-    <link rel="prev" href="../extensions/part8.html" />
+    <link rel="prev" href="../extensions/part10.html" />
     
 
         
@@ -36,7 +34,7 @@
     
 
         
-    <div class="book" data-level="4.10" data-basepath=".." data-revision="Fri Jan 20 2017 14:15:57 GMT+0530 (IST)">
+    <div class="book" data-level="4.12" data-basepath=".." data-revision="Fri Jan 20 2017 14:15:57 GMT+0530 (IST)">
     
 
 <div class="book-summary">
@@ -460,7 +458,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="4.10" data-path="extensions/part9.html">
+        <li class="chapter " data-level="4.10" data-path="extensions/part9.html">
             
                 
                     <a href="../extensions/part9.html">
@@ -490,7 +488,7 @@
             
         </li>
     
-        <li class="chapter " data-level="4.12" data-path="extensions/part11.html">
+        <li class="chapter active" data-level="4.12" data-path="extensions/part11.html">
             
                 
                     <a href="../extensions/part11.html">
@@ -613,217 +611,80 @@
                 
                     <section class="normal" id="section-">
                     
-                        <h1 id="libreoffice-extension-development-with-c-part-9-adding-a-context-menu">Libreoffice extension development with C++ - Part 9 - Adding a context menu.</h1>
+                        <h1 id="libreoffice-extension-development-with-c-part-10-creating-a-real-time-stock-market-data-client-extension">Libreoffice extension development with C++ - Part 10 - Creating a real-time stock market data client extension.</h1>
 <h3 id="audience-selection">Audience selection</h3>
 <ol>
 <li>Audience type <strong><a href="index.html">AUD-C</a></strong> can jump directly to <strong><a href="#prebuilt">Test the prebuilt extension</a></strong></li>
 <li>Audience type <strong><a href="index.html">AUD-B</a></strong> can jump directly to <strong><a href="#buildsec">Download, build and test the extension</a></strong></li>
 </ol>
 <hr>
-<p>Context menu is one that appears when we right-click on a sheet. In this part we are going to add an entry to context menu and assign action to it.</p>
-<p>In order to register a new entry in LO context menu, we need access to <code>Frame</code> object of the current window. For this we are going to make a <code>AsyncJob</code> component that gets executed via a normal addon menu in the menubar. Since we already know how to implement <code>AsyncJob</code> component, we here focus on how we use this component to register a <strong>new context menu entry</strong>.</p>
-<p>A context menu entry can be added by implementing <code>com::sun::star::ui::XContextMenuInterceptor</code> interface which has a single method :</p>
-<pre><code class="lang-cpp">::com::sun::star::ui::<span class="hljs-function">ContextMenuInterceptorAction SAL_CALL <span class="hljs-title">notifyContextMenuExecute</span><span class="hljs-params">(
-    <span class="hljs-keyword">const</span> ::com::sun::star::ui::ContextMenuExecuteEvent&amp; rEvent )</span>
-    <span class="hljs-title">throw</span> <span class="hljs-params">( ::com::sun::star::uno::RuntimeException )</span></span>;
-</code></pre>
-<p>and then we register this implementation using <code>XContextMenuInterception</code> object&apos;s <code>registerContextMenuInterceptor()</code> method inside <code>executeAsync()</code> of our <code>AsyncJob</code> component implementation <code>RegisterInterceptorJobImpl</code>. Let us now focus on implementing <code>com::sun::star::ui::XContextMenuInterceptor</code></p>
-<pre><code class="lang-cpp"><span class="hljs-comment">// interceptor.hxx</span>
-<span class="hljs-comment">// XContextMenuInterceptor implementer class</span>
-<span class="hljs-keyword">class</span> ContextMenuInterceptorImpl : <span class="hljs-keyword">public</span> cppu::WeakImplHelper1&lt; ::com::sun::star::ui::XContextMenuInterceptor &gt;
-{
-
-<span class="hljs-keyword">public</span>:
-
-    ContextMenuInterceptorImpl()
-    {
-    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;DEBUG&gt;&gt;&gt; Created ContextMenuInterceptorImpl object : %p\n&quot;</span>, <span class="hljs-keyword">this</span>); fflush(stdout);
-    }
-
-    <span class="hljs-keyword">virtual</span> ::com::sun::star::ui::<span class="hljs-function">ContextMenuInterceptorAction SAL_CALL <span class="hljs-title">notifyContextMenuExecute</span><span class="hljs-params">(
-    <span class="hljs-keyword">const</span> ::com::sun::star::ui::ContextMenuExecuteEvent&amp; rEvent )</span>
-    <span class="hljs-title">throw</span> <span class="hljs-params">( ::com::sun::star::uno::RuntimeException )</span></span>; 
-};
-
-
-<span class="hljs-comment">// interceptor.cxx</span>
-
-ContextMenuInterceptorAction SAL_CALL ContextMenuInterceptorImpl::notifyContextMenuExecute(
-    <span class="hljs-keyword">const</span> ContextMenuExecuteEvent&amp; rEvent )
-    <span class="hljs-keyword">throw</span> ( RuntimeException )
-{
-
-    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;DEBUG&gt;&gt;&gt; Inside notifyContextMenuExecute : this = %p\n&quot;</span>, <span class="hljs-keyword">this</span>); fflush(stdout);
-    <span class="hljs-keyword">try</span> {
-    Reference&lt; XIndexContainer &gt; xContextMenu = rEvent.ActionTriggerContainer;
-    <span class="hljs-keyword">if</span> ( !xContextMenu.is() )
-    {
-        logError(<span class="hljs-string">&quot;DEBUG&gt;&gt;&gt; notifyContextMenuExecute : bad rEvent.ActionTriggerContainer\n&quot;</span>);
-        <span class="hljs-keyword">return</span> ContextMenuInterceptorAction_IGNORED;
-    }
-    Reference&lt; XMultiServiceFactory &gt; xMenuElementFactory( xContextMenu, UNO_QUERY );
-    <span class="hljs-keyword">if</span> ( !xMenuElementFactory.is() )
-    {
-        logError(<span class="hljs-string">&quot;DEBUG&gt;&gt;&gt; notifyContextMenuExecute : bad xMenuElementFactory\n&quot;</span>);
-        <span class="hljs-keyword">return</span> ContextMenuInterceptorAction_IGNORED;
-    }
-
-    Reference&lt; XPropertySet &gt; xSeparator( xMenuElementFactory-&gt;createInstance( <span class="hljs-string">&quot;com.sun.star.ui.ActionTriggerSeparator&quot;</span> ), UNO_QUERY );
-    <span class="hljs-keyword">if</span> ( !xSeparator.is() )
-    {
-        logError(<span class="hljs-string">&quot;DEBUG&gt;&gt;&gt; notifyContextMenuExecute : cannot create xSeparator\n&quot;</span>);
-        <span class="hljs-keyword">return</span> ContextMenuInterceptorAction_IGNORED;
-    }
-
-    xSeparator-&gt;setPropertyValue( <span class="hljs-string">&quot;SeparatorType&quot;</span>, makeAny( ActionTriggerSeparatorType::LINE ) );
-
-    Reference&lt; XPropertySet &gt; xMenuEntry( xMenuElementFactory-&gt;createInstance( <span class="hljs-string">&quot;com.sun.star.ui.ActionTrigger&quot;</span> ), UNO_QUERY );
-    <span class="hljs-keyword">if</span> ( !xMenuEntry.is() )
-    {
-        logError(<span class="hljs-string">&quot;DEBUG&gt;&gt;&gt; notifyContextMenuExecute : cannot create xMenuEntry\n&quot;</span>);
-        <span class="hljs-keyword">return</span> ContextMenuInterceptorAction_IGNORED;
-    }
-
-    xMenuEntry-&gt;setPropertyValue( <span class="hljs-string">&quot;Text&quot;</span>, makeAny(OUString(<span class="hljs-string">&quot;Increment cell(s)&quot;</span>)));
-    xMenuEntry-&gt;setPropertyValue( <span class="hljs-string">&quot;CommandURL&quot;</span>, makeAny( OUString(<span class="hljs-string">&quot;vnd.sun.star.job:event=onIncrementClick&quot;</span>) ) );
-
-    sal_Int32 nCount = xContextMenu-&gt;getCount();
-    sal_Int32 nIdx = nCount;
-    xContextMenu-&gt;insertByIndex( nIdx++, makeAny( xSeparator ) );
-    xContextMenu-&gt;insertByIndex( nIdx++, makeAny( xMenuEntry ) );
-
-    <span class="hljs-keyword">return</span> ContextMenuInterceptorAction_CONTINUE_MODIFIED;
-    }
-    <span class="hljs-keyword">catch</span> ( Exception&amp; e )
-    {
-    <span class="hljs-built_in">fprintf</span>(stderr, <span class="hljs-string">&quot;DEBUG&gt;&gt;&gt; notifyContextMenuExecute : caught UNO exception: %s\n&quot;</span>,
-        OUStringToOString( e.Message, RTL_TEXTENCODING_ASCII_US ).getStr());
-    fflush(stderr);
-    }
-
-    <span class="hljs-keyword">return</span> ContextMenuInterceptorAction_IGNORED;
+<p>In this part we build an applicable extension using the techniques we learnt from previous parts. We build a stock market data client that maintains a TCP connections to a server(that we write). The client requests data updates for a particular ticker from a <em>particular timestamp</em> onwards via a JSON message. The server replies with another JSON message containing simulated data for the ticker from the requested timestamp till now. The extension(client) will now parse this JSON message and puts the data in its own buffer and updates a spreadsheet with the data. The client maintains this TCP connection to poll the server periodically.</p>
+<p>We first discuss the high level design before going into details. Following is a sample JSON request message made by the client.</p>
+<pre><code class="lang-json">{
+        <span class="hljs-string">&quot;Ticker&quot;</span>  :  <span class="hljs-string">&quot;AAPL&quot;</span>,
+        <span class="hljs-string">&quot;From&quot;</span>    :  <span class="hljs-number">1257894000</span>
 }
 </code></pre>
-<p>The method <code>notifyContextMenuExecute()</code> gets a struct object typed <code>ContextMenuExecuteEvent</code>. This struct contains the following fields :</p>
-<ol>
-<li>ActionTriggerContainer : This is a collection of recursive menu entries. It also acts as a factory for creating new menu entries.</li>
-<li>ExecutePosition : This contains info on the coordinates where context menu will be created.</li>
-<li>SourceWindow : Contains the window where the context menu has been requested.</li>
-<li>Selection : Provides the current selection inside the source window.</li>
-</ol>
-<p>There are two types of menu entries :</p>
-<ol>
-<li>com.sun.star.ui.ActionTrigger : Normal menu entry with actions.</li>
-<li>com.sun.star.ui.ActionTriggerSeparator : A menu entry which is just a separator.</li>
-</ol>
-<p>In the above code we create each of these menu entries using <code>ContextMenuExecuteEvent::ActionTriggerContainer</code>&apos;s <code>XMultiServiceFactory</code> method <code>createInstance()</code>.</p>
-<p><code>com.sun.star.ui.ActionTrigger</code> menu entry has the following properties :</p>
-<ol>
-<li>Text : This is the text label of the menu entry</li>
-<li>CommandURL : This is where we assign the command URL which will be executed if the menu entry is selected by the user. We need to implement a <code>ProtocolHandler</code> or <code>AsyncJob</code> or <code>Job</code> component to handle this URL. In this case we just reuse our <code>AsyncJob</code> component <code>RegisterInterceptorJobImpl</code>. The URL we use here is <code>vnd.sun.star.job:event=onIncrementClick</code></li>
-<li>Image : This property contains an image that is shown left of the menu label. The use is optional so that no image is used if this member is not initialized.</li>
-<li>SubContainer : This property contains an optional sub menu.</li>
-</ol>
-<p><code>com.sun.star.ui.ActionTriggerSeparator</code> menu entry has one optional property : <code>SeparatorType</code> which can take any of the values :</p>
-<ol>
-<li>LINE</li>
-<li>SPACE</li>
-<li>LINEBREAK</li>
-</ol>
-<p>Next after creating these new menu entries we insert them to the <code>ActionTriggerContainer</code> member of <code>ContextMenuExecuteEvent</code> object we received using the method <code>insertByIndex()</code>.</p>
-<p>Finally the method <code>notifyContextMenuExecute()</code> needs to return one of the following possibilities ( of type <code>com.sun.star.ui.ContextMenuInterceptorAction</code> ) :</p>
-<ol>
-<li>IGNORED : This indicates that our interceptor has ignored the call and we don&apos;t want any modifications done to the context menu. The next registered <code>com.sun.star.ui.XContextMenuInterceptor</code> would then be notified.</li>
-<li>CANCELLED : The context menu must not be executed (ie no menu is shown). No remaining interceptor will be called.</li>
-<li>EXECUTE_MODIFIED : We modified the context menu and should be executed without notifying the next registered <code>com.sun.star.ui.XContextMenuInterceptor</code>.</li>
-<li>CONTINUE_MODIFIED : We modified the context menu and next registered interceptor should be notified.</li>
-</ol>
-<p>We want our <code>XContextMenuInterceptor</code> implementation <code>ContextMenuInterceptorImpl</code> to be instantiated only once per LO lifetime. We could do this by making it a singleton, but in this case we make use of C++&apos;s <code>static</code> variable to make it a singleton manually. For this we write a private method <code>getInterceptor</code> in the AsyncJob implementation class. This method accepts the current <code>XFrame</code> object and a reference to an integer that indicates the number of times this method was called for the current <code>XFrame</code> object. This method has a static variable to hold on to uno reference to <code>XContextMenuInterceptor</code> we implemented and makes sure we instantiate it only once.</p>
-<pre><code class="lang-cpp">Reference&lt; XContextMenuInterceptor &gt;&amp; RegisterInterceptorJobImpl::getInterceptor( <span class="hljs-keyword">const</span> Reference&lt;XFrame&gt;&amp; xFrame, sal_Int32&amp; rCalls )
-{
-    <span class="hljs-keyword">static</span> Reference&lt; XContextMenuInterceptor &gt; xInterceptor;
-    <span class="hljs-keyword">static</span> std::<span class="hljs-stl_container"><span class="hljs-built_in">map</span>&lt;<span class="hljs-built_in">std</span>::<span class="hljs-keyword">uintptr_t</span>, sal_Int32&gt;</span> aFrame2Calls;
-    <span class="hljs-keyword">if</span> ( !xInterceptor.is() )
-    xInterceptor = Reference&lt; XContextMenuInterceptor &gt;( (cppu::OWeakObject*) <span class="hljs-keyword">new</span> ContextMenuInterceptorImpl(), UNO_QUERY );
+<p>where the <code>From</code>&apos;s value is the timestamp from which we want the stock data, expressed as the number of seconds elapsed since January 1, 1970 UTC. The server reponse will look like :</p>
+<pre><code class="lang-json">{
+        <span class="hljs-string">&quot;Tstamp&quot;</span>  : [ <span class="hljs-number">1257894001</span>, <span class="hljs-number">1257894002</span>, <span class="hljs-number">1257894003</span> ],
+        <span class="hljs-string">&quot;Price&quot;</span>   : [ <span class="hljs-number">100.23</span>, <span class="hljs-number">100.52</span>, <span class="hljs-number">100.12</span> ],
+        <span class="hljs-string">&quot;Volume&quot;</span>  : [ <span class="hljs-number">2340023</span>, <span class="hljs-number">2343042</span>, <span class="hljs-number">2347891</span> ]
+}
+</code></pre>
+<p>Note that there are three arrays in the response json. All arrays will have the same length, here there are three data points. <code>Tstamp</code> array specifies the timestamps of each data point. <code>Price</code> array gives the price at each point in time and <code>Volume</code> gives the instantaneous volumes.</p>
+<p>Next we describe the server-client system with a block diagram showing its components.</p>
+<p><img src="stockstreamer.png" alt="Stock streamer block diagram"></p>
+<p>The extension is made of a singleton component that implements the class <code>StockClient</code> which supports the interface <code>XStockClient</code>. The definition of <code>XStockClient</code> is as follows :</p>
+<pre><code>// SimpleStockClient.idl
+#ifndef __inco_niocs_test_stockclient_idl__
+#define __inco_niocs_test_stockclient_idl__
 
-    std::<span class="hljs-keyword">uintptr_t</span> nFramePtrVal = <span class="hljs-keyword">reinterpret_cast</span>&lt;std::<span class="hljs-keyword">uintptr_t</span>&gt;( xFrame.get() );
-    <span class="hljs-keyword">auto</span> aItr = aFrame2Calls.find( nFramePtrVal );
-    <span class="hljs-keyword">if</span> ( aItr != aFrame2Calls.end() )
-    rCalls = ++(aItr-&gt;second);
-    <span class="hljs-keyword">else</span>
+#include &lt;com/sun/star/lang/IllegalArgumentException.idl&gt;
+#include &lt;com/sun/star/sheet/XSpreadsheet.idl&gt;
+
+module inco { module niocs { module test {
+
+    interface XStockClient
     {
-    aFrame2Calls[ nFramePtrVal ] = <span class="hljs-number">1</span>;
-    rCalls = <span class="hljs-number">1</span>;
-    }
-    <span class="hljs-keyword">return</span> xInterceptor;
-}
-</code></pre>
-<p>Next we handle the events <code>onEnableInterceptClick1</code> ( event produced by the normal menu entry to enable the context menu ) and <code>onIncrementClick</code> ( event produced by the context menu ) in <code>executeAsync()</code> of our AsyncJob.</p>
-<pre><code class="lang-cpp"><span class="hljs-keyword">if</span> (  aEventName.equalsAscii(<span class="hljs-string">&quot;onEnableInterceptClick1&quot;</span>) )
-{
-    sal_Int32 nNumCalls = <span class="hljs-number">0</span>;
-    Reference&lt; XContextMenuInterceptor &gt; xInterceptor = getInterceptor( xFrame, nNumCalls );
-    <span class="hljs-keyword">if</span> ( nNumCalls &gt; <span class="hljs-number">1</span> )
-    {
-        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;DEBUG&gt;&gt;&gt; Interceptor is already enabled\n&quot;</span>);
-    fflush(stdout);
-    }
-    <span class="hljs-keyword">else</span>
-    {
-        Reference&lt; XController &gt; xController = xFrame-&gt;getController();
-        <span class="hljs-keyword">if</span> ( xController.is() )
-        {
-            Reference&lt; XContextMenuInterception &gt; xContextMenuInterception( xController, UNO_QUERY );
-            <span class="hljs-keyword">if</span> ( xContextMenuInterception.is() )
-            {
-                xContextMenuInterception-&gt;registerContextMenuInterceptor( xInterceptor );
-                <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;DEBUG&gt;&gt;&gt; Registered ContextMenuInterceptorImpl to current frame controller.\n&quot;</span>); fflush(stdout);
-            }
-        }
-    }
-} <span class="hljs-function"><span class="hljs-keyword">else</span> <span class="hljs-title">if</span> <span class="hljs-params">( aEventName.equalsAscii(&quot;onIncrementClick&quot;)</span> ) </span>{
-    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;DEBUG&gt;&gt;&gt; Got request from DISPATCH envType and event name onIncrementClick, going to call IncrementCellValue().\n&quot;</span>); fflush(stdout);
-    IncrementMarkedCellValues( xFrame );
-}
-</code></pre>
-<p><code>IncrementMarkedCellValues()</code> is executed as an action to user selecting our context menu entry. It imcrements all numerical cells by 1 under current selection.</p>
+        void setEnableUpdates( [in] boolean bSet );
+        void setSheet( [in] ::com::sun::star::sheet::XSpreadsheet rxSheet );
+    };
+
+    singleton theStockClient : XStockClient;
+    service StockClient : XStockClient;
+
+}; }; };
+
+#endif
+</code></pre><p><code>setEnableUpdates()</code> takes a boolean flag to enable/disable updates of data from the server. <code>setSheet()</code> methods lets the user of the extension (possibly a macro as in this case) supply the sheet where the updates of data are to be written. On construction of the singleton, it spawns a worker thread (built on top of LO api&apos;s <code>salhelper::Thread</code>) that does all the work of connecting to the server and polling the server for data updates. The worker thread has a TCP client object using LO&apos;s api class <code>osl::ConnectorSocket</code>, which makes a long running connection to the address <code>localhost:1239</code> where the server is supposed to be listening. The data received during each poll is pushed into ring buffers implemented inside the class <code>StockRingBuffer</code> which consists of arrays for holding the <code>Tstamp</code>, <code>Price</code> and <code>Volume</code> components of the streamed data. The arrays have a fixed length and keeps overwriting over the oldest entries when run out of space. So it keeps track of the latest N entries of prices, timestamps and volume timeseries it receives from the server. After receiving each data update, the extension updates the sheet it has been provided by the macro to write out the latest N entries of the timeseries it has been recording. The value of N is fixed at 100. For parsing JSON message we use <a href="https://www.gitbook.com/book/miloyip/rapidjson/details" target="_blank">rapidjson</a> C++ header only library. The files involved in the implementation of the extension are <code>stockclient.hxx</code> and <code>stockclient.cxx</code>. The server is implemented in golang in <code>stockserver.go</code></p>
 <h2 id="-a-name-buildsec-a-download-build-and-test-the-extension"><a name="buildsec"></a>Download, build and test the extension</h2>
+<p>The server is written in golang, so you would need a standard golang compiler to build the server from source code. See <a href="https://golang.org/doc/install" target="_blank">Install Golang</a>.
+If you do not want to build the server from source, we have provided a binary version of the same called <code>stockserver</code>.</p>
 <p>The whole project can be downloaded, built and installed by doing :</p>
-<pre><code>$ git clone https://github.com/niocs/CtxtMenuInterceptor.git
-$ cd CtxtMenuInterceptor
+<pre><code>$ sudo dnf install rapidjson-devel
+$ git clone https://github.com/niocs/StockStreamer.git
+$ cd StockStreamer
 $ make
-$ $LOROOT/instdir/program/unopkg add /home/$username/libreoffice5.3_sdk/LINUXexample.out/bin/CtxtMenuInterceptor.oxt
+$ $LOROOT/instdir/program/unopkg add /home/$username/libreoffice5.3_sdk/LINUXexample.out/bin/SimpleStockClient.oxt
+$ go build stockserver.go
 </code></pre><p>To remove the extension, do :</p>
-<pre><code>$ $LOROOT/instdir/program/unopkg remove CtxtMenuInterceptor.oxt
-</code></pre><p>Click on the menu <code>Add-On example &gt; Enable context menu</code>. Now you should see something like below in the terminal.</p>
-<pre><code>DEBUG&gt;&gt;&gt; Created RegisterInterceptorJobImpl object : 0x7ff86e8382e8
-DEBUG&gt;&gt;&gt; Called executeAsync() : this = 0x7ff86e8382e8
-DEBUG&gt;&gt;&gt; xFrame = 0x7ff88134ec78
-DEBUG&gt;&gt;&gt; Created ContextMenuInterceptorImpl object : 0x7ff86e831c10
-DEBUG&gt;&gt;&gt; Registered ContextMenuInterceptorImpl to current frame controller.
-</code></pre><p>If you click again on the same menu, you should see the following in terminal indicating that the object <code>ContextMenuInterceptorImpl</code> is instantiated only once.</p>
-<pre><code>DEBUG&gt;&gt;&gt; Created RegisterInterceptorJobImpl object : 0x7ff86e8383d8
-DEBUG&gt;&gt;&gt; Called executeAsync() : this = 0x7ff86e8383d8
-DEBUG&gt;&gt;&gt; xFrame = 0x7ff88134ec78
-DEBUG&gt;&gt;&gt; Interceptor is already enabled
-</code></pre><p>Now populate few cells with <strong>numbers</strong> and place cursor on them or select them and right click. You should see the menu entry <code>Increment cell(s)</code> and a menu-separator just above that. When you click it the cells you selected with numbers should increment by 1. The following would be displayed in terminal on doing that :</p>
-<pre><code>DEBUG&gt;&gt;&gt; Inside notifyContextMenuExecute : this = 0x7ff86e831c10
-DEBUG&gt;&gt;&gt; Created RegisterInterceptorJobImpl object : 0x7ff880089570
-DEBUG&gt;&gt;&gt; Called executeAsync() : this = 0x7ff880089570
-DEBUG&gt;&gt;&gt; xFrame = 0x7ff88134ec78
-DEBUG&gt;&gt;&gt; Got request from DISPATCH envType and event name onIncrementClick, going to call IncrementCellValue().
-</code></pre><p>If you clicked <code>Increment cell(s)</code> context menu with non-numeric data in current/selected cell(s), then those cells will not be modified. The terminal would say something like :</p>
-<pre><code>DEBUG&gt;&gt;&gt; Got request from DISPATCH envType and event name onIncrementClick, going to call IncrementCellValue().
-DEBUG&gt;&gt;&gt; IncrementCellRange : cell type is not numeric, skipping.
-</code></pre><h2 id="-a-name-prebuilt-a-test-the-prebuilt-extension"><a name="prebuilt"></a>Test the prebuilt extension</h2>
+<pre><code>$ $LOROOT/instdir/program/unopkg remove SimpleStockClient.oxt
+</code></pre><p>Now we need to allow macros in Calc if you have not already. Open Calc and go to Tools &gt; Options &gt; Security &gt; Click &quot;Macro Security&quot; &gt; Select the radio button &quot;Medium - Confirmation required before executing macros from untrusted source&quot;. Restart Calc. This is a one time process. To test the extension, open the file <code>StockClient.ods</code>, and it may prompt for enabling Macros, and you should enable macros. Now run the server in a separate terminal as :</p>
+<pre><code>$ cd StockStreamer
+$ ./stockserver
+</code></pre><p>Go back to the opened file in LO, and you should see three buttons on Sheet1 : <code>Init</code>, <code>Enable Updates</code>, <code>Disable Updates</code>. Click on <strong>Init</strong> button first, before clicking on anything else (otherwise the behaviour will be undefined). Then click on <strong>Enable Updates</strong>, wait for few minutes, and you should see the cell ranges A8-A107, B8-B107 and C8-C107 fill up and get updated every couple of seconds. You should also see the charts for Prices and Volume gets updated as time goes on. Clicking on <strong>Disable Updates</strong> will stop the updates but the client will still stay connected to the server. Clicking on <strong>Enable Updates</strong> will start the updates again and so on.</p>
+<h2 id="-a-name-prebuilt-a-test-the-prebuilt-extension"><a name="prebuilt"></a>Test the prebuilt extension</h2>
 <p>Download the extension as :</p>
-<pre><code>$ git clone https://github.com/niocs/CtxtMenuInterceptor.git
-$ cd CtxtMenuInterceptor
-</code></pre><p>In <code>CtxtMenuInterceptor</code> directory you will see a file called <code>CtxtMenuInterceptor.oxt</code>. This is the prebuilt extension. Install this extension using</p>
-<pre><code>$ unopkg add /path/to/CtxtMenuInterceptor.oxt
+<pre><code>$ git clone https://github.com/niocs/StockStreamer.git
+$ cd StockStreamer
+</code></pre><p>In <code>StockStreamer</code> directory you will see a file called <code>SimpleStockClient.oxt</code>. This is the prebuilt extension. Install this extension using</p>
+<pre><code>$ unopkg add /path/to/SimpleStockClient.oxt
 </code></pre><p>To remove this extension do :</p>
-<pre><code>$ unopkg remove CtxtMenuInterceptor.oxt
-</code></pre><p>Open calc and click on the menu <code>Add-On example &gt; Enable context menu</code>. This should enable our context menu entry from now on. Now populate few cells with <strong>numbers</strong> and place cursor on them or select them and right click. You should see the menu entry <code>Increment cell(s)</code> and a menu-separator just above that. When you click it, the cells you selected with numbers should increment by 1.</p>
+<pre><code>$ unopkg remove SimpleStockClient.oxt
+</code></pre><p>Now we need to allow macros in Calc if you have not already. Open Calc and go to Tools &gt; Options &gt; Security &gt; Click &quot;Macro Security&quot; &gt; Select the radio button &quot;Medium - Confirmation required before executing macros from untrusted source&quot;. Restart Calc. This is a one time process. To test the extension, open the file <code>StockClient.ods</code>, and it may prompt for enabling Macros, and you should enable macros. Now run the server in a separate terminal as :</p>
+<pre><code>$ ./stockserver
+</code></pre><p>Go back to the opened file in LO, and you should see three buttons on Sheet1 : <code>Init</code>, <code>Enable Updates</code>, <code>Disable Updates</code>. Click on <strong>Init</strong> button first, before clicking on anything else (otherwise the behaviour will be undefined). Then click on <strong>Enable Updates</strong>, wait for few minutes, and you should see the cell ranges A8-A107, B8-B107 and C8-C107 fill up and get updated every couple of seconds. You should also see the charts for Prices and Volume gets updated as time goes on. Clicking on <strong>Disable Updates</strong> will stop the updates but the client will still stay connected to the server. Clicking on <strong>Enable Updates</strong> will start the updates again and so on.</p>
 
                     
                     </section>
@@ -834,10 +695,8 @@ $ cd CtxtMenuInterceptor
         </div>
 
         
-        <a href="../extensions/part8.html" class="navigation navigation-prev " aria-label="Previous page: Part8 SingletonComponent"><i class="fa fa-angle-left"></i></a>
+        <a href="../extensions/part10.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page: Part10 SP500Addin"><i class="fa fa-angle-left"></i></a>
         
-        
-        <a href="../extensions/part10.html" class="navigation navigation-next " aria-label="Next page: Part10 SP500Addin"><i class="fa fa-angle-right"></i></a>
         
     </div>
 </div>
