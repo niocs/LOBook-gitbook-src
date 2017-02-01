@@ -13,6 +13,7 @@
      * [mdds](misc/mdds.md)
      * [namespaces](misc/namespaces.md)
      * [patchchecklist](misc/patchchecklist.md)
+     * [16kcols](misc/16kcols.md)
 * [LibreOffice extensions](extensions/README.md)
      * [PreFAQ](extensions/prefaq.md)
      * [Part1 UNO Intro](extensions/part1.md)
